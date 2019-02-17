@@ -41,12 +41,12 @@ public class RateLimitController {
 	 * @return
 	 */
 	@GetMapping("users")
-	public Object getUsers(@RequestParam(value = "apiKey") String apiKey) {
+	public ResponseEntity<String> getUsers(@RequestParam(value = "apiKey") String apiKey) {
 		RateLimiter rateLimiter = RateLimiter.create(apiKey, REQUEST_LIMIT, INTERVAL);
 		rateLimiter.fill(apiKey);
 		if (rateLimiter.getRequestBucket(apiKey).getIsOverflow()) {
 			throw new TooManyRequestException(
-					"Rate Limit Exceeded. Try again in " + rateLimiter.getWaitingTime(apiKey) + " seconds");
+					"Rate limit exceeded. Try again in " + rateLimiter.getWaitingTime(apiKey) + " seconds");
 		}
 		return new ResponseEntity<String>("Request Accepted", HttpStatus.OK);
 	}
@@ -59,15 +59,14 @@ public class RateLimitController {
 	 * @return
 	 */
 	@GetMapping("products")
-	public Object getProducts(HttpServletRequest request) {
+	public ResponseEntity<String> getProducts(HttpServletRequest request) {
 		String ipAddress = request.getRemoteAddr();
 		RateLimiter rateLimiter = RateLimiter.create(ipAddress, REQUEST_LIMIT, INTERVAL);
 		rateLimiter.fill(ipAddress);
 		if (rateLimiter.getRequestBucket(ipAddress).getIsOverflow()) {
 			throw new TooManyRequestException(
-					"Rate Limit Exceeded. Try again in " + rateLimiter.getWaitingTime(ipAddress) + " seconds");
+					"Rate limit exceeded. Try again in " + rateLimiter.getWaitingTime(ipAddress) + " seconds");
 		}
 		return new ResponseEntity<String>("Request Accepted", HttpStatus.OK);
 	}
-
 }
